@@ -240,7 +240,7 @@ callbacks = [ReduceLROnPlateau(monitor='loss',
              ModelCheckpoint(monitor='val_acc',save_weights_only=True,
                              filepath='./Clsresults/pointnet.h5',
                              save_best_only=True,
-                             mode='min', verbose=1) ,
+                             mode='max', verbose=1) ,
             ]
 
 #TRAINING DATA
