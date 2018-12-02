@@ -9,6 +9,9 @@ from keras.layers import Dense, Flatten, Reshape, Dropout
 from keras.layers import Convolution1D, MaxPooling1D, BatchNormalization
 from keras.layers import Lambda
 from keras.utils import np_utils
+from keras.callbacks import ModelCheckpoint
+from keras.optimizers import Adam
+from schedules import onetenth_50_75
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import h5py
@@ -73,6 +76,20 @@ def jitter_point_cloud(batch_data, sigma=0.01, clip=0.05):
     jittered_data = np.clip(sigma * np.random.randn(B, N, C), -1 * clip, clip)
     jittered_data += batch_data
     return jittered_data
+
+def save_history(history, result_dir):
+    loss = history.history['loss']
+    acc = history.history['acc']
+    val_loss = history.history['val_loss']
+    val_acc = history.history['val_acc']
+    nb_epoch = len(acc)
+
+    with open(os.path.join(result_dir, 'result.txt'), 'w') as fp:
+        fp.write('epoch\tloss\tacc\tval_loss\tval_acc\n')
+        for i in range(nb_epoch):
+            fp.write('{}\t{}\t{}\t{}\t{}\n'.format(
+                i, loss[i], acc[i], val_loss[i], val_acc[i]))
+        fp.close()
 
 #DATA PREPARATION
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -200,17 +217,24 @@ prediction = Flatten()(c)
 model = Model(inputs=input_points, outputs=prediction)
 print(model.summary())
 
+lr = 0.0001
+adam = Adam(lr=lr)
 model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 
+if not os.path.exists('./Clsresults/'):
+    os.mkdir('./Clsresults/')
+checkpoint = ModelCheckpoint('./Clsresults/pointnet.h5', monitor='val_acc',
+                                save_weights_only=True, save_best_only=True,
+                                mode = 'min', verbose=1)
 #TRAINING DATA
 # Fit model on training data
-for i in range(1,50):
+for i in range(1,100):
     # rotate and jitter the points
     train_points_rotate = rotate_point_cloud(train_points_r)
     train_points_jitter = jitter_point_cloud(train_points_rotate)
-    model.fit(train_points_jitter, Y_train, batch_size=32, epochs=1, shuffle=True, verbose=1)
+    history = model.fit(train_points_jitter, Y_train, batch_size=32, epochs=1, shuffle=True, verbose=1, callbacks=[checkpoint, onetenth_50_75(lr)])
     #model.fit(train_points_jitter, train_labels_r, batch_size=32, epochs=1, shuffle=True, verbose=1)
     s = "Current epoch is:" + str(i)
     print(s)
