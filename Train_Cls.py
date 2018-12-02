@@ -226,7 +226,7 @@ model.compile(optimizer='adam',
 if not os.path.exists('./Clsresults/'):
     os.mkdir('./Clsresults/')
 
-callbacks = [ReduceLROnPlateau(monitor='val_loss',
+callbacks = [ReduceLROnPlateau(monitor='loss',
                                factor=0.1,
                                patience=2,
                                verbose=1,
