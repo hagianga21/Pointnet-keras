@@ -244,7 +244,14 @@ for i in range(1,100):
     # rotate and jitter the points
     train_points_rotate = rotate_point_cloud(train_points_r)
     train_points_jitter = jitter_point_cloud(train_points_rotate)
-    history = model.fit(train_points_jitter, Y_train, batch_size=32, epochs=1, shuffle=True, verbose=1, callbacks=callbacks)
+    validation_data = (test_points_r, Y_test)
+    history = model.fit(train_points_jitter, Y_train, 
+                        batch_size=32, 
+                        epochs=1, 
+                        shuffle=True, 
+                        verbose=1, 
+                        validation_data = validation_data, 
+                        callbacks=callbacks)
     #model.fit(train_points_jitter, train_labels_r, batch_size=32, epochs=1, shuffle=True, verbose=1)
     s = "Current epoch is:" + str(i)
     print(s)
