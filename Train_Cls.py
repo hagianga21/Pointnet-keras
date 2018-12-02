@@ -18,6 +18,11 @@ import h5py
 
 from keras.layers import Dense, Dropout, Flatten, Conv1D, MaxPool2D, Activation
 
+import os
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+# The GPU id to use, usually either "0" or "1"
+os.environ["CUDA_VISIBLE_DEVICES"]="1" 
+
 numPoints = 2048
 numCategories = 40
 
@@ -230,7 +235,7 @@ callbacks = [ReduceLROnPlateau(monitor='loss',
                                factor=0.1,
                                patience=2,
                                verbose=1,
-                               min_delta=0.000001,
+                               min_lr=0.000001,
                                mode='min'),
              ModelCheckpoint(monitor='val_acc',save_weights_only=True,
                              filepath='./Clsresults/pointnet.h5',
